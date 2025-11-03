@@ -128,7 +128,6 @@ medinova/
 ## 👨‍💻 Author
 
 * *Harsh Mriduhash* – [@harshmriduhash](https://github.com/harshmriduhash)
-* *Aitijhya Roy* – [@AitijhyaCoded](https://github.com/AitijhyaCoded)
 
 ---
 
