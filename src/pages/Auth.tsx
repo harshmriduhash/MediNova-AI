@@ -115,13 +115,13 @@
 //                 <AlertDescription>{authError}</AlertDescription>
 //               </Alert>
 //             )}
-            
+
 //             <Tabs defaultValue="login" onValueChange={(value) => setIsLoggingIn(value === "login")}>
 //               <TabsList className="grid w-full grid-cols-2 mb-6">
 //                 <TabsTrigger value="login">Login</TabsTrigger>
 //                 <TabsTrigger value="register">Register</TabsTrigger>
 //               </TabsList>
-              
+
 //               <TabsContent value="login">
 //                 <Form {...loginForm}>
 //                   <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
@@ -154,7 +154,7 @@
 //                     <Button type="submit" className="w-full" disabled={isSubmitting}>
 //                       {isSubmitting ? "Signing in..." : "Sign In"}
 //                     </Button>
-                    
+
 //                     <div className="relative my-4">
 //                       <div className="absolute inset-0 flex items-center">
 //                         <Separator className="w-full" />
@@ -165,11 +165,11 @@
 //                         </span>
 //                       </div>
 //                     </div>
-                    
+
 //                     <div className="grid grid-cols-2 gap-4">
-//                       <Button 
-//                         type="button" 
-//                         variant="outline" 
+//                       <Button
+//                         type="button"
+//                         variant="outline"
 //                         onClick={() => handleGoogleSignIn("patient")}
 //                         disabled={isSubmitting}
 //                         className="w-full"
@@ -177,9 +177,9 @@
 //                         <Mail className="mr-2 h-4 w-4" />
 //                         As Patient
 //                       </Button>
-//                       <Button 
-//                         type="button" 
-//                         variant="outline" 
+//                       <Button
+//                         type="button"
+//                         variant="outline"
 //                         onClick={() => handleGoogleSignIn("doctor")}
 //                         disabled={isSubmitting}
 //                         className="w-full"
@@ -191,7 +191,7 @@
 //                   </form>
 //                 </Form>
 //               </TabsContent>
-              
+
 //               <TabsContent value="register">
 //                 <Form {...registerForm}>
 //                   <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
@@ -250,7 +250,7 @@
 //                     <Button type="submit" className="w-full" disabled={isSubmitting}>
 //                       {isSubmitting ? "Creating account..." : "Create Account"}
 //                     </Button>
-                    
+
 //                     <div className="relative my-4">
 //                       <div className="absolute inset-0 flex items-center">
 //                         <Separator className="w-full" />
@@ -261,11 +261,11 @@
 //                         </span>
 //                       </div>
 //                     </div>
-                    
+
 //                     <div className="grid grid-cols-2 gap-4">
-//                       <Button 
-//                         type="button" 
-//                         variant="outline" 
+//                       <Button
+//                         type="button"
+//                         variant="outline"
 //                         onClick={() => handleGoogleSignIn("patient")}
 //                         disabled={isSubmitting}
 //                         className="w-full"
@@ -273,9 +273,9 @@
 //                         <Mail className="mr-2 h-4 w-4" />
 //                         As Patient
 //                       </Button>
-//                       <Button 
-//                         type="button" 
-//                         variant="outline" 
+//                       <Button
+//                         type="button"
+//                         variant="outline"
 //                         onClick={() => handleGoogleSignIn("doctor")}
 //                         disabled={isSubmitting}
 //                         className="w-full"
@@ -300,17 +300,30 @@
 
 // export default Auth;
 
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -365,7 +378,9 @@ const Auth = () => {
       navigate("/dashboard");
     } catch (error: any) {
       console.error("Login error:", error);
-      setAuthError(error.message || "Failed to sign in. Please check your credentials.");
+      setAuthError(
+        error.message || "Failed to sign in. Please check your credentials."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -379,7 +394,9 @@ const Auth = () => {
       navigate("/dashboard");
     } catch (error: any) {
       console.error("Registration error:", error);
-      setAuthError(error.message || "Failed to create account. Please try again.");
+      setAuthError(
+        error.message || "Failed to create account. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -418,16 +435,22 @@ const Auth = () => {
                 <AlertDescription>{authError}</AlertDescription>
               </Alert>
             )}
-            
-            <Tabs defaultValue="login" onValueChange={(value) => setIsLoggingIn(value === "login")}>
+
+            <Tabs
+              defaultValue="login"
+              onValueChange={(value) => setIsLoggingIn(value === "login")}
+            >
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="register">Register</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="login">
                 <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                  <form
+                    onSubmit={loginForm.handleSubmit(onLoginSubmit)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={loginForm.control}
                       name="email"
@@ -435,7 +458,10 @@ const Auth = () => {
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input placeholder="your.email@example.com" {...field} />
+                            <Input
+                              placeholder="your.email@example.com"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -448,7 +474,11 @@ const Auth = () => {
                         <FormItem>
                           <FormLabel>Password</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
+                            <Input
+                              type="password"
+                              placeholder="••••••••"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -467,11 +497,17 @@ const Auth = () => {
                               className="flex gap-6"
                             >
                               <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="patient" id="login-patient" />
+                                <RadioGroupItem
+                                  value="patient"
+                                  id="login-patient"
+                                />
                                 <Label htmlFor="login-patient">Patient</Label>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="doctor" id="login-doctor" />
+                                <RadioGroupItem
+                                  value="doctor"
+                                  id="login-doctor"
+                                />
                                 <Label htmlFor="login-doctor">Doctor</Label>
                               </div>
                             </RadioGroup>
@@ -480,10 +516,14 @@ const Auth = () => {
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isSubmitting}
+                    >
                       {isSubmitting ? "Signing in..." : "Sign In"}
                     </Button>
-                    
+
                     <div className="relative my-4">
                       <div className="absolute inset-0 flex items-center">
                         <Separator className="w-full" />
@@ -494,11 +534,11 @@ const Auth = () => {
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         onClick={() => handleGoogleSignIn("patient")}
                         disabled={isSubmitting}
                         className="w-full"
@@ -506,9 +546,9 @@ const Auth = () => {
                         <Chrome className="mr-2 h-4 w-4" />
                         As Patient
                       </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         onClick={() => handleGoogleSignIn("doctor")}
                         disabled={isSubmitting}
                         className="w-full"
@@ -520,10 +560,13 @@ const Auth = () => {
                   </form>
                 </Form>
               </TabsContent>
-              
+
               <TabsContent value="register">
                 <Form {...registerForm}>
-                  <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                  <form
+                    onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={registerForm.control}
                       name="email"
@@ -531,7 +574,10 @@ const Auth = () => {
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input placeholder="your.email@example.com" {...field} />
+                            <Input
+                              placeholder="your.email@example.com"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -544,7 +590,11 @@ const Auth = () => {
                         <FormItem>
                           <FormLabel>Password</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
+                            <Input
+                              type="password"
+                              placeholder="••••••••"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -563,11 +613,19 @@ const Auth = () => {
                               className="flex gap-6"
                             >
                               <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="patient" id="register-patient" />
-                                <Label htmlFor="register-patient">Patient</Label>
+                                <RadioGroupItem
+                                  value="patient"
+                                  id="register-patient"
+                                />
+                                <Label htmlFor="register-patient">
+                                  Patient
+                                </Label>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="doctor" id="register-doctor" />
+                                <RadioGroupItem
+                                  value="doctor"
+                                  id="register-doctor"
+                                />
                                 <Label htmlFor="register-doctor">Doctor</Label>
                               </div>
                             </RadioGroup>
@@ -576,10 +634,14 @@ const Auth = () => {
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isSubmitting}
+                    >
                       {isSubmitting ? "Creating account..." : "Create Account"}
                     </Button>
-                    
+
                     <div className="relative my-4">
                       <div className="absolute inset-0 flex items-center">
                         <Separator className="w-full" />
@@ -590,11 +652,11 @@ const Auth = () => {
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         onClick={() => handleGoogleSignIn("patient")}
                         disabled={isSubmitting}
                         className="w-full"
@@ -602,9 +664,9 @@ const Auth = () => {
                         <Chrome className="mr-2 h-4 w-4" />
                         As Patient
                       </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         onClick={() => handleGoogleSignIn("doctor")}
                         disabled={isSubmitting}
                         className="w-full"
