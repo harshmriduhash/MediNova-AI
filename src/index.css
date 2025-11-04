@@ -1,38 +1,37 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
 @layer base {
   :root {
     --background: 210 40% 98%;
     --foreground: 222 47% 11%;
- 
+
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
- 
+
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
- 
+
     --primary: 196 100% 47%;
     --primary-foreground: 210 40% 98%;
- 
+
     --secondary: 210 40% 96%;
     --secondary-foreground: 222 47% 11%;
- 
+
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
- 
+
     --accent: 196 100% 97%;
     --accent-foreground: 222 47% 11%;
- 
+
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
- 
+
     --border: 214 32% 91%;
     --input: 214 32% 91%;
     --ring: 196 100% 47%;
- 
+
     --radius: 0.5rem;
 
     /* MediNova brand colors */
@@ -60,38 +59,38 @@
     --azure-900: 202 77% 25%;
     --azure-950: 204 80% 16%;
   }
- 
+
   .dark {
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
- 
+
     --card: 222 47% 14%;
     --card-foreground: 210 40% 98%;
- 
+
     --popover: 222 47% 14%;
     --popover-foreground: 210 40% 98%;
- 
+
     --primary: 196 100% 50%;
     --primary-foreground: 222 47% 11%;
- 
+
     --secondary: 217 32% 17%;
     --secondary-foreground: 210 40% 98%;
- 
+
     --muted: 217 32% 17%;
     --muted-foreground: 215 20% 65%;
- 
+
     --accent: 196 100% 15%;
     --accent-foreground: 210 40% 98%;
- 
+
     --destructive: 0 62% 30%;
     --destructive-foreground: 210 40% 98%;
- 
+
     --border: 217 32% 17%;
     --input: 217 32% 17%;
     --ring: 196 100% 50%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
@@ -116,7 +115,7 @@
   .modern-gradient {
     @apply bg-gradient-to-r from-teal-500 to-azure-500;
   }
-  
+
   .text-gradient {
     @apply bg-gradient-to-r from-teal-500 to-azure-600 bg-clip-text text-transparent;
   }
@@ -158,7 +157,7 @@
   .animate-pulse-slow {
     animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
-  
+
   .animate-shimmer {
     animation: shimmer 2s linear infinite;
     background: linear-gradient(
@@ -210,7 +209,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
