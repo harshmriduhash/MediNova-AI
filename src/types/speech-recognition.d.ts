@@ -1,4 +1,3 @@
-
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
   interimResults: boolean;
