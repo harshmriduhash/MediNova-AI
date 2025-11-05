@@ -3,14 +3,36 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Mail, Calendar, Clock, Activity, AlertCircle } from "lucide-react";
+import {
+  User,
+  Mail,
+  Calendar,
+  Clock,
+  Activity,
+  AlertCircle,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
@@ -40,7 +62,9 @@ type DoctorProfileFormValues = z.infer<typeof doctorProfileSchema>;
 const Profile = () => {
   const { currentUser, userRole } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState<PatientProfileFormValues | DoctorProfileFormValues | null>(null);
+  const [profileData, setProfileData] = useState<
+    PatientProfileFormValues | DoctorProfileFormValues | null
+  >(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -67,22 +91,28 @@ const Profile = () => {
   useEffect(() => {
     const loadProfile = async () => {
       if (!currentUser) return;
-      
+
       try {
         const profileRef = doc(db, "profiles", currentUser.uid);
         const profileSnap = await getDoc(profileRef);
-        
+
         if (profileSnap.exists()) {
-          setProfileData(profileSnap.data() as PatientProfileFormValues | DoctorProfileFormValues);
+          setProfileData(
+            profileSnap.data() as
+              | PatientProfileFormValues
+              | DoctorProfileFormValues
+          );
         } else {
           // Set default values based on role
-          const defaultData = userRole === "patient" ? defaultPatientValues : defaultDoctorValues;
+          const defaultData =
+            userRole === "patient" ? defaultPatientValues : defaultDoctorValues;
           setProfileData(defaultData);
         }
       } catch (error) {
         console.error("Error loading profile:", error);
         // Fallback to default values
-        const defaultData = userRole === "patient" ? defaultPatientValues : defaultDoctorValues;
+        const defaultData =
+          userRole === "patient" ? defaultPatientValues : defaultDoctorValues;
         setProfileData(defaultData);
       } finally {
         setLoading(false);
@@ -94,12 +124,14 @@ const Profile = () => {
 
   const patientForm = useForm<PatientProfileFormValues>({
     resolver: zodResolver(patientProfileSchema),
-    defaultValues: profileData as PatientProfileFormValues || defaultPatientValues,
+    defaultValues:
+      (profileData as PatientProfileFormValues) || defaultPatientValues,
   });
 
   const doctorForm = useForm<DoctorProfileFormValues>({
     resolver: zodResolver(doctorProfileSchema),
-    defaultValues: profileData as DoctorProfileFormValues || defaultDoctorValues,
+    defaultValues:
+      (profileData as DoctorProfileFormValues) || defaultDoctorValues,
   });
 
   // Update form values when profileData changes
@@ -115,7 +147,7 @@ const Profile = () => {
 
   const onPatientSubmit = async (data: PatientProfileFormValues) => {
     if (!currentUser) return;
-    
+
     try {
       const profileRef = doc(db, "profiles", currentUser.uid);
       await setDoc(profileRef, {
@@ -123,14 +155,14 @@ const Profile = () => {
         userRole: "patient",
         updatedAt: new Date().toISOString(),
       });
-      
+
       setProfileData(data);
-      
+
       toast({
         title: "Profile updated",
         description: "Your profile has been successfully updated.",
       });
-      
+
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -144,7 +176,7 @@ const Profile = () => {
 
   const onDoctorSubmit = async (data: DoctorProfileFormValues) => {
     if (!currentUser) return;
-    
+
     try {
       const profileRef = doc(db, "profiles", currentUser.uid);
       await setDoc(profileRef, {
@@ -152,14 +184,14 @@ const Profile = () => {
         userRole: "doctor",
         updatedAt: new Date().toISOString(),
       });
-      
+
       setProfileData(data);
-      
+
       toast({
         title: "Profile updated",
         description: "Your profile has been successfully updated.",
       });
-      
+
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -179,7 +211,9 @@ const Profile = () => {
     );
   }
 
-  const currentData = profileData || (userRole === "patient" ? defaultPatientValues : defaultDoctorValues);
+  const currentData =
+    profileData ||
+    (userRole === "patient" ? defaultPatientValues : defaultDoctorValues);
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -189,7 +223,7 @@ const Profile = () => {
           Manage your personal information and preferences
         </p>
       </div>
-      
+
       <div className="grid gap-6 md:grid-cols-4">
         <Card className="md:col-span-1">
           <CardContent className="pt-6">
@@ -199,28 +233,29 @@ const Profile = () => {
                   {userRole === "patient" ? "JD" : "SS"}
                 </AvatarFallback>
               </Avatar>
-              
+
               <div className="text-center">
                 <h2 className="text-xl font-bold">
                   {(currentData as any).fullName}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {userRole === "doctor" && (currentData as DoctorProfileFormValues).specialization}
+                  {userRole === "doctor" &&
+                    (currentData as DoctorProfileFormValues).specialization}
                   {userRole === "patient" && "Patient"}
                 </p>
               </div>
-              
-              <Button 
-                variant="outline" 
+
+              <Button
+                variant="outline"
                 className="w-full"
                 onClick={() => setIsEditing(!isEditing)}
               >
                 {isEditing ? "Cancel Editing" : "Edit Profile"}
               </Button>
             </div>
-            
+
             <Separator className="my-6" />
-            
+
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -231,7 +266,7 @@ const Profile = () => {
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-3">
                 <User className="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div>
@@ -241,7 +276,7 @@ const Profile = () => {
                   </p>
                 </div>
               </div>
-              
+
               {userRole === "patient" && (
                 <div className="flex items-start gap-3">
                   <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -253,7 +288,7 @@ const Profile = () => {
                   </div>
                 </div>
               )}
-              
+
               {userRole === "doctor" && (
                 <div className="flex items-start gap-3">
                   <Activity className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -268,7 +303,7 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <div className="md:col-span-3 space-y-6">
           {userRole === "patient" ? (
             <Card>
@@ -281,7 +316,10 @@ const Profile = () => {
               <CardContent>
                 {isEditing ? (
                   <Form {...patientForm}>
-                    <form onSubmit={patientForm.handleSubmit(onPatientSubmit)} className="space-y-6">
+                    <form
+                      onSubmit={patientForm.handleSubmit(onPatientSubmit)}
+                      className="space-y-6"
+                    >
                       <div className="grid gap-4 md:grid-cols-2">
                         <FormField
                           control={patientForm.control}
@@ -296,7 +334,7 @@ const Profile = () => {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={patientForm.control}
                           name="dateOfBirth"
@@ -310,7 +348,7 @@ const Profile = () => {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={patientForm.control}
                           name="phone"
@@ -324,7 +362,7 @@ const Profile = () => {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={patientForm.control}
                           name="emergencyContact"
@@ -342,7 +380,7 @@ const Profile = () => {
                           )}
                         />
                       </div>
-                      
+
                       <FormField
                         control={patientForm.control}
                         name="allergies"
@@ -353,13 +391,14 @@ const Profile = () => {
                               <Input {...field} />
                             </FormControl>
                             <FormDescription>
-                              List any allergies you have (medications, food, etc.)
+                              List any allergies you have (medications, food,
+                              etc.)
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={patientForm.control}
                         name="medications"
@@ -370,13 +409,14 @@ const Profile = () => {
                               <Input {...field} />
                             </FormControl>
                             <FormDescription>
-                              List medications you're currently taking, including dosage
+                              List medications you're currently taking,
+                              including dosage
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={patientForm.control}
                         name="notificationsEnabled"
@@ -385,7 +425,8 @@ const Profile = () => {
                             <div className="space-y-0.5">
                               <FormLabel>Notifications</FormLabel>
                               <FormDescription>
-                                Receive updates about your health reports and appointments
+                                Receive updates about your health reports and
+                                appointments
                               </FormDescription>
                             </div>
                             <FormControl>
@@ -397,7 +438,7 @@ const Profile = () => {
                           </FormItem>
                         )}
                       />
-                      
+
                       <div className="flex justify-end space-x-2">
                         <Button
                           type="button"
@@ -406,9 +447,7 @@ const Profile = () => {
                         >
                           Cancel
                         </Button>
-                        <Button type="submit">
-                          Save Changes
-                        </Button>
+                        <Button type="submit">Save Changes</Button>
                       </div>
                     </form>
                   </Form>
@@ -416,48 +455,85 @@ const Profile = () => {
                   <div className="space-y-6">
                     <div className="grid gap-4 md:grid-cols-2">
                       <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Full Name</h3>
-                        <p>{(currentData as PatientProfileFormValues).fullName}</p>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                          Full Name
+                        </h3>
+                        <p>
+                          {(currentData as PatientProfileFormValues).fullName}
+                        </p>
                       </div>
-                      
+
                       <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Date of Birth</h3>
-                        <p>{(currentData as PatientProfileFormValues).dateOfBirth}</p>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                          Date of Birth
+                        </h3>
+                        <p>
+                          {
+                            (currentData as PatientProfileFormValues)
+                              .dateOfBirth
+                          }
+                        </p>
                       </div>
-                      
+
                       <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Phone Number</h3>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                          Phone Number
+                        </h3>
                         <p>{(currentData as PatientProfileFormValues).phone}</p>
                       </div>
-                      
+
                       <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Emergency Contact</h3>
-                        <p>{(currentData as PatientProfileFormValues).emergencyContact}</p>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                          Emergency Contact
+                        </h3>
+                        <p>
+                          {
+                            (currentData as PatientProfileFormValues)
+                              .emergencyContact
+                          }
+                        </p>
                       </div>
                     </div>
-                    
+
                     <Separator />
-                    
+
                     <div>
-                      <h3 className="text-sm font-medium text-muted-foreground mb-1">Allergies</h3>
-                      <p>{(currentData as PatientProfileFormValues).allergies || "None listed"}</p>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                        Allergies
+                      </h3>
+                      <p>
+                        {(currentData as PatientProfileFormValues).allergies ||
+                          "None listed"}
+                      </p>
                     </div>
-                    
+
                     <div>
-                      <h3 className="text-sm font-medium text-muted-foreground mb-1">Current Medications</h3>
-                      <p>{(currentData as PatientProfileFormValues).medications || "None listed"}</p>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                        Current Medications
+                      </h3>
+                      <p>
+                        {(currentData as PatientProfileFormValues)
+                          .medications || "None listed"}
+                      </p>
                     </div>
-                    
+
                     <Separator />
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-medium">Notifications</h3>
                         <p className="text-sm text-muted-foreground">
-                          Receive updates about your health reports and appointments
+                          Receive updates about your health reports and
+                          appointments
                         </p>
                       </div>
-                      <Switch checked={(currentData as PatientProfileFormValues).notificationsEnabled} disabled />
+                      <Switch
+                        checked={
+                          (currentData as PatientProfileFormValues)
+                            .notificationsEnabled
+                        }
+                        disabled
+                      />
                     </div>
                   </div>
                 )}
@@ -474,7 +550,10 @@ const Profile = () => {
               <CardContent>
                 {isEditing ? (
                   <Form {...doctorForm}>
-                    <form onSubmit={doctorForm.handleSubmit(onDoctorSubmit)} className="space-y-6">
+                    <form
+                      onSubmit={doctorForm.handleSubmit(onDoctorSubmit)}
+                      className="space-y-6"
+                    >
                       <div className="grid gap-4 md:grid-cols-2">
                         <FormField
                           control={doctorForm.control}
@@ -489,7 +568,7 @@ const Profile = () => {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={doctorForm.control}
                           name="specialization"
@@ -503,7 +582,7 @@ const Profile = () => {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={doctorForm.control}
                           name="licenseNumber"
@@ -517,7 +596,7 @@ const Profile = () => {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={doctorForm.control}
                           name="phone"
@@ -532,7 +611,7 @@ const Profile = () => {
                           )}
                         />
                       </div>
-                      
+
                       <FormField
                         control={doctorForm.control}
                         name="bio"
@@ -543,13 +622,14 @@ const Profile = () => {
                               <Input {...field} />
                             </FormControl>
                             <FormDescription>
-                              A brief description of your professional background and expertise
+                              A brief description of your professional
+                              background and expertise
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={doctorForm.control}
                         name="notificationsEnabled"
@@ -558,7 +638,8 @@ const Profile = () => {
                             <div className="space-y-0.5">
                               <FormLabel>Notifications</FormLabel>
                               <FormDescription>
-                                Receive updates about patient cases and system alerts
+                                Receive updates about patient cases and system
+                                alerts
                               </FormDescription>
                             </div>
                             <FormControl>
@@ -570,7 +651,7 @@ const Profile = () => {
                           </FormItem>
                         )}
                       />
-                      
+
                       <div className="flex justify-end space-x-2">
                         <Button
                           type="button"
@@ -579,9 +660,7 @@ const Profile = () => {
                         >
                           Cancel
                         </Button>
-                        <Button type="submit">
-                          Save Changes
-                        </Button>
+                        <Button type="submit">Save Changes</Button>
                       </div>
                     </form>
                   </Form>
@@ -589,35 +668,57 @@ const Profile = () => {
                   <div className="space-y-6">
                     <div className="grid gap-4 md:grid-cols-2">
                       <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Full Name</h3>
-                        <p>{(currentData as DoctorProfileFormValues).fullName}</p>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                          Full Name
+                        </h3>
+                        <p>
+                          {(currentData as DoctorProfileFormValues).fullName}
+                        </p>
                       </div>
-                      
+
                       <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Specialization</h3>
-                        <p>{(currentData as DoctorProfileFormValues).specialization}</p>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                          Specialization
+                        </h3>
+                        <p>
+                          {
+                            (currentData as DoctorProfileFormValues)
+                              .specialization
+                          }
+                        </p>
                       </div>
-                      
+
                       <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-1">License Number</h3>
-                        <p>{(currentData as DoctorProfileFormValues).licenseNumber}</p>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                          License Number
+                        </h3>
+                        <p>
+                          {
+                            (currentData as DoctorProfileFormValues)
+                              .licenseNumber
+                          }
+                        </p>
                       </div>
-                      
+
                       <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-1">Phone Number</h3>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                          Phone Number
+                        </h3>
                         <p>{(currentData as DoctorProfileFormValues).phone}</p>
                       </div>
                     </div>
-                    
+
                     <Separator />
-                    
+
                     <div>
-                      <h3 className="text-sm font-medium text-muted-foreground mb-1">Professional Bio</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                        Professional Bio
+                      </h3>
                       <p>{(currentData as DoctorProfileFormValues).bio}</p>
                     </div>
-                    
+
                     <Separator />
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-medium">Notifications</h3>
@@ -625,14 +726,20 @@ const Profile = () => {
                           Receive updates about patient cases and system alerts
                         </p>
                       </div>
-                      <Switch checked={(currentData as DoctorProfileFormValues).notificationsEnabled} disabled />
+                      <Switch
+                        checked={
+                          (currentData as DoctorProfileFormValues)
+                            .notificationsEnabled
+                        }
+                        disabled
+                      />
                     </div>
                   </div>
                 )}
               </CardContent>
             </Card>
           )}
-          
+
           <Card>
             <CardHeader>
               <CardTitle className="text-xl">Account Security</CardTitle>
@@ -651,9 +758,9 @@ const Profile = () => {
                   </div>
                   <Button variant="outline">Change Password</Button>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-medium">Two-Factor Authentication</h3>
@@ -663,20 +770,25 @@ const Profile = () => {
                   </div>
                   <Button variant="outline">Enable 2FA</Button>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-start gap-2">
                     <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
                     <div>
-                      <h3 className="font-medium text-destructive">Delete Account</h3>
+                      <h3 className="font-medium text-destructive">
+                        Delete Account
+                      </h3>
                       <p className="text-sm text-muted-foreground">
                         Permanently delete your account and all associated data
                       </p>
                     </div>
                   </div>
-                  <Button variant="outline" className="text-destructive border-destructive hover:bg-destructive/10">
+                  <Button
+                    variant="outline"
+                    className="text-destructive border-destructive hover:bg-destructive/10"
+                  >
                     Delete Account
                   </Button>
                 </div>
