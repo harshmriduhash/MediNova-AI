@@ -3,21 +3,57 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Loader2, AlertCircle, CheckCircle2, Clock, Download, Mic, MicOff, User, Users } from "lucide-react";
+import {
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Download,
+  Mic,
+  MicOff,
+  User,
+  Users,
+} from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
-import { collection, doc, addDoc, serverTimestamp, getDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  addDoc,
+  serverTimestamp,
+  getDoc,
+} from "firebase/firestore";
 import GeminiService from "@/services/GeminiService";
 import { toast as sonnerToast } from "sonner";
 
@@ -59,10 +95,13 @@ interface DiagnosisResult {
 const Diagnosis = () => {
   const { currentUser, userRole } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [diagnosisResult, setDiagnosisResult] = useState<DiagnosisResult | null>(null);
+  const [diagnosisResult, setDiagnosisResult] =
+    useState<DiagnosisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null
+  );
   const [userProfile, setUserProfile] = useState<any>(null);
   const { toast } = useToast();
 
@@ -84,11 +123,11 @@ const Diagnosis = () => {
   useEffect(() => {
     const loadUserProfile = async () => {
       if (!currentUser) return;
-      
+
       try {
         const profileRef = doc(db, "profiles", currentUser.uid);
         const profileSnap = await getDoc(profileRef);
-        
+
         if (profileSnap.exists()) {
           setUserProfile(profileSnap.data());
         }
@@ -107,8 +146,11 @@ const Diagnosis = () => {
       const birthDate = new Date(userProfile.dateOfBirth);
       let calculatedAge = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
-      
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+      ) {
         calculatedAge--;
       }
 
@@ -131,10 +173,14 @@ const Diagnosis = () => {
 
       recorder.ondataavailable = (e) => chunks.push(e.data);
       recorder.onstop = async () => {
-        const blob = new Blob(chunks, { type: 'audio/wav' });
-        
+        const blob = new Blob(chunks, { type: "audio/wav" });
+
         // Convert to text using Web Speech API
-        const SpeechRecognition = (window as typeof window & { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
+        const SpeechRecognition = (
+          window as typeof window & {
+            webkitSpeechRecognition?: typeof SpeechRecognition;
+          }
+        ).webkitSpeechRecognition;
         if (!SpeechRecognition) {
           toast({
             title: "Speech recognition not supported",
@@ -144,21 +190,24 @@ const Diagnosis = () => {
           return;
         }
         const recognition = new SpeechRecognition();
-        recognition.lang = 'en-US';
+        recognition.lang = "en-US";
         recognition.continuous = true;
         recognition.interimResults = false;
 
         recognition.onresult = (event: SpeechRecognitionEvent) => {
           const transcript = Array.from(event.results)
             .map((result) => result[0].transcript)
-            .join(' ');
-          
+            .join(" ");
+
           const currentSymptoms = form.getValues("symptoms");
-          form.setValue("symptoms", currentSymptoms + (currentSymptoms ? " " : "") + transcript);
+          form.setValue(
+            "symptoms",
+            currentSymptoms + (currentSymptoms ? " " : "") + transcript
+          );
         };
 
         recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-          console.error('Speech recognition error:', event.error);
+          console.error("Speech recognition error:", event.error);
           toast({
             title: "Voice recording error",
             description: "Could not convert speech to text. Please try again.",
@@ -167,21 +216,22 @@ const Diagnosis = () => {
         };
 
         recognition.start();
-        
+
         // Stop recording after the blob is processed
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
       };
 
       setMediaRecorder(recorder);
       recorder.start();
       setIsRecording(true);
-      
+
       toast({
         title: "Recording started",
-        description: "Speak your symptoms clearly. Click the mic again to stop.",
+        description:
+          "Speak your symptoms clearly. Click the mic again to stop.",
       });
     } catch (error) {
-      console.error('Error accessing microphone:', error);
+      console.error("Error accessing microphone:", error);
       toast({
         title: "Microphone access denied",
         description: "Please allow microphone access to use voice input.",
@@ -195,7 +245,7 @@ const Diagnosis = () => {
       mediaRecorder.stop();
       setIsRecording(false);
       setMediaRecorder(null);
-      
+
       toast({
         title: "Recording stopped",
         description: "Processing your voice input...",
@@ -207,12 +257,12 @@ const Diagnosis = () => {
     try {
       const conditions = [];
       console.log("Parsing conditions from:", response);
-      
+
       const patterns = [
         /✅\s*(?:Possible\s*)?Condition\(s\)?:?\s*([\s\S]*?)(?=🧪|🩺|💊|🧠|$)/i,
-        /Condition\(s\)?:?\s*([\s\S]*?)(?=Test|Treatment|Reasoning|$)/i
+        /Condition\(s\)?:?\s*([\s\S]*?)(?=Test|Treatment|Reasoning|$)/i,
       ];
-      
+
       let conditionsText = "";
       for (const pattern of patterns) {
         const match = response.match(pattern);
@@ -221,67 +271,79 @@ const Diagnosis = () => {
           break;
         }
       }
-      
+
       if (conditionsText) {
-        const lines = conditionsText.split('\n').filter(line => 
-          line.trim().startsWith('•') || line.trim().startsWith('-') || line.trim().startsWith('*')
-        );
-        
+        const lines = conditionsText
+          .split("\n")
+          .filter(
+            (line) =>
+              line.trim().startsWith("•") ||
+              line.trim().startsWith("-") ||
+              line.trim().startsWith("*")
+          );
+
         for (const line of lines) {
-          const cleanLine = line.replace(/^[•\-*]\s*/, '').trim();
+          const cleanLine = line.replace(/^[•\-*]\s*/, "").trim();
           if (cleanLine) {
-            const confidenceMatch = cleanLine.match(/(.*?)\s*-\s*Confidence:\s*(\w+)\s*\(?(\d+)%?\)?/i);
-            
+            const confidenceMatch = cleanLine.match(
+              /(.*?)\s*-\s*Confidence:\s*(\w+)\s*\(?(\d+)%?\)?/i
+            );
+
             if (confidenceMatch) {
               conditions.push({
                 name: confidenceMatch[1].trim(),
                 confidence: {
                   level: confidenceMatch[2] as "High" | "Medium" | "Low",
-                  percentage: confidenceMatch[3] ? parseInt(confidenceMatch[3]) : undefined
+                  percentage: confidenceMatch[3]
+                    ? parseInt(confidenceMatch[3])
+                    : undefined,
                 },
-                reasoning: "Based on symptom analysis"
+                reasoning: "Based on symptom analysis",
               });
             } else {
               conditions.push({
                 name: cleanLine,
                 confidence: { level: "Medium" as const },
-                reasoning: "Based on symptom analysis"
+                reasoning: "Based on symptom analysis",
               });
             }
           }
         }
       }
-      
+
       if (conditions.length === 0) {
         conditions.push({
           name: "Further evaluation needed",
           confidence: { level: "Low" as const },
-          reasoning: "Unable to determine specific condition from provided symptoms"
+          reasoning:
+            "Unable to determine specific condition from provided symptoms",
         });
       }
-      
+
       console.log("Parsed conditions:", conditions);
       return conditions;
     } catch (error) {
       console.error("Error parsing conditions:", error);
-      return [{
-        name: "Analysis error - please try again",
-        confidence: { level: "Low" as const },
-        reasoning: "Error in processing response"
-      }];
+      return [
+        {
+          name: "Analysis error - please try again",
+          confidence: { level: "Low" as const },
+          reasoning: "Error in processing response",
+        },
+      ];
     }
   };
-  
+
   const parseTestsFromResponse = (response: string) => {
     try {
       const tests = [];
       console.log("Parsing tests from:", response);
-      
+
       const patterns = [
         /🧪\s*(?:Recommended\s*)?Tests?:?\s*([\s\S]*?)(?=💊|🧠|🚨|$)/i,
-        /Tests?:?\s*([\s\S]*?)(?=Treatment|Reasoning|Warning|$)/i
+        /Tests?:?\s*([\s\S]*?)(?=Treatment|Reasoning|Warning|$)/i,
       ];
-      
+
       let testsText = "";
       for (const pattern of patterns) {
         const match = response.match(pattern);
@@ -290,59 +352,68 @@ const Diagnosis = () => {
           break;
         }
       }
-      
+
       if (testsText) {
-        const lines = testsText.split('\n').filter(line => 
-          line.trim().startsWith('•') || line.trim().startsWith('-') || line.trim().startsWith('*')
-        );
-        
+        const lines = testsText
+          .split("\n")
+          .filter(
+            (line) =>
+              line.trim().startsWith("•") ||
+              line.trim().startsWith("-") ||
+              line.trim().startsWith("*")
+          );
+
         for (const line of lines) {
-          const cleanLine = line.replace(/^[•\-*]\s*/, '').trim();
+          const cleanLine = line.replace(/^[•\-*]\s*/, "").trim();
           if (cleanLine) {
-            const detailedMatch = cleanLine.match(/(.*?)\s*-\s*Purpose:\s*(.*?)\s*-\s*Urgency:\s*(\w+)/i);
-            
+            const detailedMatch = cleanLine.match(
+              /(.*?)\s*-\s*Purpose:\s*(.*?)\s*-\s*Urgency:\s*(\w+)/i
+            );
+
             if (detailedMatch) {
               tests.push({
                 name: detailedMatch[1].trim(),
                 purpose: detailedMatch[2].trim(),
-                urgency: detailedMatch[3] as "High" | "Medium" | "Low"
+                urgency: detailedMatch[3] as "High" | "Medium" | "Low",
               });
             } else {
               tests.push({
                 name: cleanLine,
-                urgency: "Medium" as const
+                urgency: "Medium" as const,
               });
             }
           }
         }
       }
-      
+
       if (tests.length === 0) {
         tests.push({
           name: "Consult healthcare provider for appropriate testing",
-          urgency: "Medium" as const
+          urgency: "Medium" as const,
         });
       }
-      
+
       console.log("Parsed tests:", tests);
       return tests;
     } catch (error) {
       console.error("Error parsing tests:", error);
-      return [{ name: "Consult healthcare provider", urgency: "Medium" as const }];
+      return [
+        { name: "Consult healthcare provider", urgency: "Medium" as const },
+      ];
     }
   };
-  
+
   const parseTreatmentsFromResponse = (response: string) => {
     try {
       const treatments = [];
       const warningSigns = [];
       console.log("Parsing treatments from:", response);
-      
+
       const treatmentPatterns = [
         /💊\s*(?:Treatment\s*(?:Recommendations?)?):?\s*([\s\S]*?)(?=🚨|🧠|When\s*to\s*See|$)/i,
-        /Treatment:?\s*([\s\S]*?)(?=Warning|Reasoning|When\s*to\s*See|$)/i
+        /Treatment:?\s*([\s\S]*?)(?=Warning|Reasoning|When\s*to\s*See|$)/i,
       ];
-      
+
       let treatmentsText = "";
       for (const pattern of treatmentPatterns) {
         const match = response.match(pattern);
@@ -351,36 +422,41 @@ const Diagnosis = () => {
           break;
         }
       }
-      
+
       if (treatmentsText) {
-        const lines = treatmentsText.split('\n').filter(line => 
-          line.trim().startsWith('•') || line.trim().startsWith('-') || line.trim().startsWith('*')
-        );
-        
+        const lines = treatmentsText
+          .split("\n")
+          .filter(
+            (line) =>
+              line.trim().startsWith("•") ||
+              line.trim().startsWith("-") ||
+              line.trim().startsWith("*")
+          );
+
         for (const line of lines) {
-          const cleanLine = line.replace(/^[•\-*]\s*/, '').trim();
+          const cleanLine = line.replace(/^[•\-*]\s*/, "").trim();
           if (cleanLine) {
             const explainedMatch = cleanLine.match(/(.*?)\s*-\s*(.*)/);
-            
+
             if (explainedMatch) {
               treatments.push({
                 action: explainedMatch[1].trim(),
-                explanation: explainedMatch[2].trim()
+                explanation: explainedMatch[2].trim(),
               });
             } else {
               treatments.push({
-                action: cleanLine
+                action: cleanLine,
               });
             }
           }
         }
       }
-      
+
       const warningPatterns = [
         /🚨\s*(?:When\s*to\s*See\s*(?:a\s*)?Doctor):?\s*([\s\S]*?)(?=\n\s*\n|$)/i,
-        /When\s*to\s*See\s*(?:a\s*)?Doctor:?\s*([\s\S]*?)(?=\n\s*\n|$)/i
+        /When\s*to\s*See\s*(?:a\s*)?Doctor:?\s*([\s\S]*?)(?=\n\s*\n|$)/i,
       ];
-      
+
       let warningText = "";
       for (const pattern of warningPatterns) {
         const match = response.match(pattern);
@@ -389,48 +465,53 @@ const Diagnosis = () => {
           break;
         }
       }
-      
+
       if (warningText) {
-        const lines = warningText.split('\n').filter(line => 
-          line.trim().startsWith('•') || line.trim().startsWith('-') || line.trim().startsWith('*')
-        );
-        
+        const lines = warningText
+          .split("\n")
+          .filter(
+            (line) =>
+              line.trim().startsWith("•") ||
+              line.trim().startsWith("-") ||
+              line.trim().startsWith("*")
+          );
+
         for (const line of lines) {
-          const cleanLine = line.replace(/^[•\-*]\s*/, '').trim();
+          const cleanLine = line.replace(/^[•\-*]\s*/, "").trim();
           if (cleanLine) {
             warningSigns.push(cleanLine);
           }
         }
       }
-      
+
       if (treatments.length === 0) {
         treatments.push({
-          action: "Consult healthcare provider for appropriate treatment"
+          action: "Consult healthcare provider for appropriate treatment",
         });
       }
-      
+
       console.log("Parsed treatments:", treatments);
       console.log("Parsed warnings:", warningSigns);
       return { treatments, warningSigns };
     } catch (error) {
       console.error("Error parsing treatments:", error);
-      return { 
-        treatments: [{ action: "Consult healthcare provider" }], 
-        warningSigns: ["Seek immediate medical attention if symptoms worsen"] 
+      return {
+        treatments: [{ action: "Consult healthcare provider" }],
+        warningSigns: ["Seek immediate medical attention if symptoms worsen"],
       };
     }
   };
-  
+
   const parseReasoningFromResponse = (response: string) => {
     try {
       const reasoningLines = [];
       console.log("Parsing reasoning from:", response);
-      
+
       const patterns = [
         /🧠\s*(?:Medical\s*)?Reasoning:?\s*([\s\S]*?)(?=\n\s*\n|$)/i,
-        /Reasoning:?\s*([\s\S]*?)(?=\n\s*\n|$)/i
+        /Reasoning:?\s*([\s\S]*?)(?=\n\s*\n|$)/i,
       ];
-      
+
       let reasoningText = "";
       for (const pattern of patterns) {
         const match = response.match(pattern);
@@ -439,24 +520,32 @@ const Diagnosis = () => {
           break;
         }
       }
-      
+
       if (reasoningText) {
-        const lines = reasoningText.split('\n').filter(line => 
-          line.trim().startsWith('•') || line.trim().startsWith('-') || line.trim().startsWith('*') || line.trim().length > 10
-        );
-        
+        const lines = reasoningText
+          .split("\n")
+          .filter(
+            (line) =>
+              line.trim().startsWith("•") ||
+              line.trim().startsWith("-") ||
+              line.trim().startsWith("*") ||
+              line.trim().length > 10
+          );
+
         for (const line of lines) {
-          const cleanLine = line.replace(/^[•\-*]\s*/, '').trim();
+          const cleanLine = line.replace(/^[•\-*]\s*/, "").trim();
           if (cleanLine && cleanLine.length > 5) {
             reasoningLines.push(cleanLine);
           }
         }
       }
-      
+
       if (reasoningLines.length === 0) {
-        reasoningLines.push("Medical reasoning based on symptom presentation and clinical knowledge");
+        reasoningLines.push(
+          "Medical reasoning based on symptom presentation and clinical knowledge"
+        );
       }
-      
+
       console.log("Parsed reasoning:", reasoningLines);
       return reasoningLines;
     } catch (error) {
@@ -470,12 +559,16 @@ const Diagnosis = () => {
       setIsAnalyzing(true);
       setError(null);
       setDiagnosisResult(null);
-      
+
       // Create comprehensive prompt with all gathered information
       const comprehensiveSymptoms = `
 Patient Information:
 - Age: ${data.age} years
-- Category: ${data.category === "self" ? "Self-analysis" : "Analysis for another person"}
+- Category: ${
+        data.category === "self"
+          ? "Self-analysis"
+          : "Analysis for another person"
+      }
 - Previous Medical Conditions: ${data.previousConditions || "None mentioned"}
 - Known Allergies: ${data.allergies || "None mentioned"}
 - Current Medications: ${data.medications || "None mentioned"}
@@ -485,28 +578,32 @@ ${data.symptoms}
 
 Please provide a comprehensive medical analysis considering the patient's age, medical history, allergies, and current medications when making recommendations.
       `;
-      
+
       sonnerToast.loading("Analyzing comprehensive health data...");
-      const response = await GeminiService.analyzeSymptoms(comprehensiveSymptoms, "symptoms");
+      const response = await GeminiService.analyzeSymptoms(
+        comprehensiveSymptoms,
+        "symptoms"
+      );
       console.log("Full Gemini response:", response);
-      
+
       const conditions = parseConditionsFromResponse(response);
       const tests = parseTestsFromResponse(response);
-      const { treatments, warningSigns } = parseTreatmentsFromResponse(response);
+      const { treatments, warningSigns } =
+        parseTreatmentsFromResponse(response);
       const reasoningTree = parseReasoningFromResponse(response);
-      
+
       const result: DiagnosisResult = {
         conditions,
         tests,
         treatments,
         warningsSigns: warningSigns,
-        reasoningTree
+        reasoningTree,
       };
-      
+
       setDiagnosisResult(result);
       sonnerToast.dismiss();
       sonnerToast.success("Comprehensive analysis complete");
-      
+
       // Save diagnosis to Firestore
       if (currentUser) {
         const diagnosisData = {
@@ -516,27 +613,41 @@ Please provide a comprehensive medical analysis considering the patient's age, m
           userId: currentUser.uid,
           userRole,
           status: "completed",
-          summary: `Analysis for ${data.category}: ${data.symptoms.substring(0, 100)}...`,
+          summary: `Analysis for ${data.category}: ${data.symptoms.substring(
+            0,
+            100
+          )}...`,
         };
-        
+
         try {
-          const sessionsRef = collection(db, "diagnoses", currentUser.uid, "sessions");
+          const sessionsRef = collection(
+            db,
+            "diagnoses",
+            currentUser.uid,
+            "sessions"
+          );
           await addDoc(sessionsRef, diagnosisData);
-          
+
           toast({
             title: "Diagnosis saved",
-            description: "Your comprehensive diagnosis results have been saved to your account.",
+            description:
+              "Your comprehensive diagnosis results have been saved to your account.",
           });
         } catch (firestoreError) {
           console.error("Failed to save to Firestore:", firestoreError);
         }
       }
-      
     } catch (err: any) {
       console.error("Diagnosis error:", err);
-      setError("An error occurred during the diagnosis process. Please try again later.");
+      setError(
+        "An error occurred during the diagnosis process. Please try again later."
+      );
       sonnerToast.dismiss();
-      sonnerToast.error(`Diagnosis failed: ${err.message || "Could not complete the analysis. Please try again."}`);
+      sonnerToast.error(
+        `Diagnosis failed: ${
+          err.message || "Could not complete the analysis. Please try again."
+        }`
+      );
     } finally {
       setIsAnalyzing(false);
     }
@@ -548,11 +659,11 @@ Please provide a comprehensive medical analysis considering the patient's age, m
 
   const generatePDF = () => {
     if (!diagnosisResult) return;
-    
+
     // Create a new window with only the diagnosis results
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (!printWindow) return;
-    
+
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -576,48 +687,85 @@ Please provide a comprehensive medical analysis considering the patient's age, m
           
           <h2>✅ Possible Conditions</h2>
           <ul>
-            ${diagnosisResult.conditions.map(condition => `
+            ${diagnosisResult.conditions
+              .map(
+                (condition) => `
               <li>
                 <strong>${condition.name}</strong> 
-                <span class="badge ${condition.confidence.level.toLowerCase()}">${condition.confidence.level}${condition.confidence.percentage ? ` (${condition.confidence.percentage}%)` : ''}</span>
+                <span class="badge ${condition.confidence.level.toLowerCase()}">${
+                  condition.confidence.level
+                }${
+                  condition.confidence.percentage
+                    ? ` (${condition.confidence.percentage}%)`
+                    : ""
+                }</span>
                 <br><em>${condition.reasoning}</em>
               </li>
-            `).join('')}
+            `
+              )
+              .join("")}
           </ul>
           
           <h2>🧪 Recommended Tests</h2>
           <ul>
-            ${diagnosisResult.tests.map(test => `
+            ${diagnosisResult.tests
+              .map(
+                (test) => `
               <li>
                 <strong>${test.name}</strong>
-                ${test.purpose ? `<br><em>Purpose: ${test.purpose}</em>` : ''}
-                ${test.urgency ? `<br><span class="badge ${test.urgency.toLowerCase()}">Urgency: ${test.urgency}</span>` : ''}
+                ${test.purpose ? `<br><em>Purpose: ${test.purpose}</em>` : ""}
+                ${
+                  test.urgency
+                    ? `<br><span class="badge ${test.urgency.toLowerCase()}">Urgency: ${
+                        test.urgency
+                      }</span>`
+                    : ""
+                }
               </li>
-            `).join('')}
+            `
+              )
+              .join("")}
           </ul>
           
           <h2>💊 Treatment Recommendations</h2>
           <ul>
-            ${diagnosisResult.treatments.map(treatment => `
+            ${diagnosisResult.treatments
+              .map(
+                (treatment) => `
               <li>
                 <strong>${treatment.action}</strong>
-                ${treatment.explanation ? `<br><em>${treatment.explanation}</em>` : ''}
+                ${
+                  treatment.explanation
+                    ? `<br><em>${treatment.explanation}</em>`
+                    : ""
+                }
               </li>
-            `).join('')}
+            `
+              )
+              .join("")}
           </ul>
           
-          ${diagnosisResult.warningsSigns && diagnosisResult.warningsSigns.length > 0 ? `
+          ${
+            diagnosisResult.warningsSigns &&
+            diagnosisResult.warningsSigns.length > 0
+              ? `
             <div class="warning">
               <h2>🚨 When to See a Doctor</h2>
               <ul>
-                ${diagnosisResult.warningsSigns.map(warning => `<li>${warning}</li>`).join('')}
+                ${diagnosisResult.warningsSigns
+                  .map((warning) => `<li>${warning}</li>`)
+                  .join("")}
               </ul>
             </div>
-          ` : ''}
+          `
+              : ""
+          }
           
           <h2>🧠 Medical Reasoning</h2>
           <ul>
-            ${diagnosisResult.reasoningTree.map(reason => `<li>${reason}</li>`).join('')}
+            ${diagnosisResult.reasoningTree
+              .map((reason) => `<li>${reason}</li>`)
+              .join("")}
           </ul>
           
           <div style="margin-top: 30px; font-size: 12px; color: #6b7280;">
@@ -627,14 +775,17 @@ Please provide a comprehensive medical analysis considering the patient's age, m
         </body>
       </html>
     `;
-    
+
     printWindow.document.write(htmlContent);
     printWindow.document.close();
     printWindow.focus();
     printWindow.print();
   };
 
-  const getLikelihoodColor = (confidence: {level: string; percentage?: number}) => {
+  const getLikelihoodColor = (confidence: {
+    level: string;
+    percentage?: number;
+  }) => {
     switch (confidence.level) {
       case "High":
         return "bg-red-100 text-red-800 hover:bg-red-100";
@@ -665,21 +816,27 @@ Please provide a comprehensive medical analysis considering the patient's age, m
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Smart Diagnosis</h1>
         <p className="text-muted-foreground mt-1">
-          AI-powered comprehensive symptom analysis with medical history consideration
+          AI-powered comprehensive symptom analysis with medical history
+          consideration
         </p>
       </div>
-      
+
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Comprehensive Health Assessment</CardTitle>
+            <CardTitle className="text-xl">
+              Comprehensive Health Assessment
+            </CardTitle>
             <CardDescription>
               Provide detailed information for the most accurate analysis
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 <FormField
                   control={form.control}
                   name="category"
@@ -694,14 +851,20 @@ Please provide a comprehensive medical analysis considering the patient's age, m
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="self" id="self" />
-                            <Label htmlFor="self" className="flex items-center gap-2">
+                            <Label
+                              htmlFor="self"
+                              className="flex items-center gap-2"
+                            >
                               <User className="h-4 w-4" />
                               Myself
                             </Label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="other" id="other" />
-                            <Label htmlFor="other" className="flex items-center gap-2">
+                            <Label
+                              htmlFor="other"
+                              className="flex items-center gap-2"
+                            >
                               <Users className="h-4 w-4" />
                               Someone else
                             </Label>
@@ -729,7 +892,9 @@ Please provide a comprehensive medical analysis considering the patient's age, m
                           />
                         </FormControl>
                         <FormDescription>
-                          {watchCategory === "self" && userProfile ? "Auto-filled from your profile" : "Age in years"}
+                          {watchCategory === "self" && userProfile
+                            ? "Auto-filled from your profile"
+                            : "Age in years"}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -772,7 +937,9 @@ Please provide a comprehensive medical analysis considering the patient's age, m
                           />
                         </FormControl>
                         <FormDescription>
-                          {watchCategory === "self" && userProfile ? "Auto-filled from your profile" : "Known allergies"}
+                          {watchCategory === "self" && userProfile
+                            ? "Auto-filled from your profile"
+                            : "Known allergies"}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -793,14 +960,16 @@ Please provide a comprehensive medical analysis considering the patient's age, m
                           />
                         </FormControl>
                         <FormDescription>
-                          {watchCategory === "self" && userProfile ? "Auto-filled from your profile" : "Current medications and dosages"}
+                          {watchCategory === "self" && userProfile
+                            ? "Auto-filled from your profile"
+                            : "Current medications and dosages"}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-                
+
                 <FormField
                   control={form.control}
                   name="symptoms"
@@ -812,8 +981,14 @@ Please provide a comprehensive medical analysis considering the patient's age, m
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
-                          className={isRecording ? "bg-red-50 border-red-200" : ""}
+                          onClick={
+                            isRecording
+                              ? stopVoiceRecording
+                              : startVoiceRecording
+                          }
+                          className={
+                            isRecording ? "bg-red-50 border-red-200" : ""
+                          }
                         >
                           {isRecording ? (
                             <>
@@ -836,18 +1011,15 @@ Please provide a comprehensive medical analysis considering the patient's age, m
                         />
                       </FormControl>
                       <FormDescription>
-                        Include onset, duration, severity, and any patterns you've noticed. Use voice input for hands-free entry.
+                        Include onset, duration, severity, and any patterns
+                        you've noticed. Use voice input for hands-free entry.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={isAnalyzing}
-                >
+
+                <Button type="submit" className="w-full" disabled={isAnalyzing}>
                   {isAnalyzing ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -861,7 +1033,7 @@ Please provide a comprehensive medical analysis considering the patient's age, m
             </Form>
           </CardContent>
         </Card>
-        
+
         <div className="space-y-6">
           {error && (
             <Alert variant="destructive">
@@ -870,13 +1042,16 @@ Please provide a comprehensive medical analysis considering the patient's age, m
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          
+
           {diagnosisResult && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl">Comprehensive Diagnosis Results</CardTitle>
+                <CardTitle className="text-xl">
+                  Comprehensive Diagnosis Results
+                </CardTitle>
                 <CardDescription>
-                  AI-powered analysis considering symptoms, age, medical history, and current medications
+                  AI-powered analysis considering symptoms, age, medical
+                  history, and current medications
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
@@ -887,15 +1062,22 @@ Please provide a comprehensive medical analysis considering the patient's age, m
                     <TabsTrigger value="treatments">Treatments</TabsTrigger>
                     <TabsTrigger value="reasoning">Reasoning</TabsTrigger>
                   </TabsList>
-                  
+
                   <div className="p-4">
                     <TabsContent value="conditions" className="mt-0 space-y-4">
                       {diagnosisResult.conditions.map((condition, index) => (
                         <div key={index} className="border rounded-md p-4">
                           <div className="flex justify-between items-start mb-2">
                             <h3 className="font-medium">{condition.name}</h3>
-                            <Badge className={getLikelihoodColor(condition.confidence)}>
-                              {condition.confidence.level} {condition.confidence.percentage ? `(${condition.confidence.percentage}%)` : ''}
+                            <Badge
+                              className={getLikelihoodColor(
+                                condition.confidence
+                              )}
+                            >
+                              {condition.confidence.level}{" "}
+                              {condition.confidence.percentage
+                                ? `(${condition.confidence.percentage}%)`
+                                : ""}
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
@@ -904,7 +1086,7 @@ Please provide a comprehensive medical analysis considering the patient's age, m
                         </div>
                       ))}
                     </TabsContent>
-                    
+
                     <TabsContent value="tests" className="mt-0 space-y-4">
                       {diagnosisResult.tests.map((test, index) => (
                         <div key={index} className="border rounded-md p-3">
@@ -912,20 +1094,24 @@ Please provide a comprehensive medical analysis considering the patient's age, m
                             <div>
                               <h3 className="font-medium">{test.name}</h3>
                               {test.purpose && (
-                                <p className="text-sm text-muted-foreground">{test.purpose}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {test.purpose}
+                                </p>
                               )}
                             </div>
                             {test.urgency && (
                               <div className="flex items-center">
                                 {getUrgencyIcon(test.urgency)}
-                                <span className="text-sm ml-1">{test.urgency}</span>
+                                <span className="text-sm ml-1">
+                                  {test.urgency}
+                                </span>
                               </div>
                             )}
                           </div>
                         </div>
                       ))}
                     </TabsContent>
-                    
+
                     <TabsContent value="treatments" className="mt-0 space-y-4">
                       <div className="space-y-3">
                         {diagnosisResult.treatments.map((treatment, index) => (
@@ -933,54 +1119,70 @@ Please provide a comprehensive medical analysis considering the patient's age, m
                             <div className="flex items-baseline">
                               <span className="text-primary mr-2">•</span>
                               <div>
-                                <span className="font-medium">{treatment.action}</span>
+                                <span className="font-medium">
+                                  {treatment.action}
+                                </span>
                                 {treatment.explanation && (
-                                  <p className="text-sm text-muted-foreground mt-1">{treatment.explanation}</p>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {treatment.explanation}
+                                  </p>
                                 )}
                               </div>
                             </div>
                           </div>
                         ))}
                       </div>
-                      
-                      {diagnosisResult.warningsSigns && diagnosisResult.warningsSigns.length > 0 && (
-                        <div className="border-t pt-3 mt-3">
-                          <h4 className="text-sm font-semibold mb-2 flex items-center">
-                            <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
-                            When to See a Doctor
-                          </h4>
-                          <ul className="space-y-1">
-                            {diagnosisResult.warningsSigns.map((warning, index) => (
-                              <li key={index} className="text-sm flex items-baseline">
-                                <span className="text-red-500 mr-2">•</span>
-                                <span>{warning}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
+
+                      {diagnosisResult.warningsSigns &&
+                        diagnosisResult.warningsSigns.length > 0 && (
+                          <div className="border-t pt-3 mt-3">
+                            <h4 className="text-sm font-semibold mb-2 flex items-center">
+                              <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
+                              When to See a Doctor
+                            </h4>
+                            <ul className="space-y-1">
+                              {diagnosisResult.warningsSigns.map(
+                                (warning, index) => (
+                                  <li
+                                    key={index}
+                                    className="text-sm flex items-baseline"
+                                  >
+                                    <span className="text-red-500 mr-2">•</span>
+                                    <span>{warning}</span>
+                                  </li>
+                                )
+                              )}
+                            </ul>
+                          </div>
+                        )}
                     </TabsContent>
-                    
+
                     <TabsContent value="reasoning" className="mt-0">
                       <div className="space-y-4">
                         <div className="border rounded-md p-4">
-                          <h3 className="font-medium mb-2">Medical Reasoning</h3>
+                          <h3 className="font-medium mb-2">
+                            Medical Reasoning
+                          </h3>
                           <ul className="space-y-2">
-                            {diagnosisResult.reasoningTree.map((reason, index) => (
-                              <li key={index} className="flex items-baseline">
-                                <span className="mr-2 text-primary">→</span>
-                                <span className="text-sm">{reason}</span>
-                              </li>
-                            ))}
+                            {diagnosisResult.reasoningTree.map(
+                              (reason, index) => (
+                                <li key={index} className="flex items-baseline">
+                                  <span className="mr-2 text-primary">→</span>
+                                  <span className="text-sm">{reason}</span>
+                                </li>
+                              )
+                            )}
                           </ul>
                         </div>
-                        
+
                         <Alert>
                           <AlertTitle>Important Notice</AlertTitle>
                           <AlertDescription className="text-sm">
-                            This AI-powered analysis considers your medical history and current medications. 
-                            However, it is not a substitute for professional medical advice.
-                            Always consult with a healthcare professional for proper diagnosis and treatment.
+                            This AI-powered analysis considers your medical
+                            history and current medications. However, it is not
+                            a substitute for professional medical advice. Always
+                            consult with a healthcare professional for proper
+                            diagnosis and treatment.
                           </AlertDescription>
                         </Alert>
                       </div>
