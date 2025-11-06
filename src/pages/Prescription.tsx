@@ -1,14 +1,29 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Check, FileImage, Loader2, UploadCloud, Pill, Download } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  FileImage,
+  Loader2,
+  UploadCloud,
+  Pill,
+  Download,
+} from "lucide-react";
 import { toast } from "sonner";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
@@ -35,29 +50,34 @@ const Prescription = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<PrescriptionAnalysis | null>(null);
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
-    
+
     // Check file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+    const validTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/jpg",
+      "application/pdf",
+    ];
     if (!validTypes.includes(selectedFile.type)) {
-      toast.error('Please select an image (JPG, PNG) or PDF file');
+      toast.error("Please select an image (JPG, PNG) or PDF file");
       return;
     }
-    
+
     // Check file size (max 5MB)
     if (selectedFile.size > 5 * 1024 * 1024) {
-      toast.error('File size must be less than 5MB');
+      toast.error("File size must be less than 5MB");
       return;
     }
-    
+
     setFile(selectedFile);
     setError(null);
-    
+
     // Create preview for images only
-    if (selectedFile.type.startsWith('image/')) {
+    if (selectedFile.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = () => {
         setPreviewUrl(reader.result as string);
@@ -67,31 +87,36 @@ const Prescription = () => {
       setPreviewUrl(null); // No preview for PDFs
     }
   };
-  
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
   };
-  
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const droppedFile = e.dataTransfer.files?.[0];
     if (!droppedFile) return;
-    
+
     // Check file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+    const validTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/jpg",
+      "application/pdf",
+    ];
     if (!validTypes.includes(droppedFile.type)) {
-      toast.error('Please drop an image (JPG, PNG) or PDF file');
+      toast.error("Please drop an image (JPG, PNG) or PDF file");
       return;
     }
-    
+
     setFile(droppedFile);
     setError(null);
-    
+
     // Create preview for images only
-    if (droppedFile.type.startsWith('image/')) {
+    if (droppedFile.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = () => {
         setPreviewUrl(reader.result as string);
@@ -101,52 +126,60 @@ const Prescription = () => {
       setPreviewUrl(null); // No preview for PDFs
     }
   };
-  
-  const parsePrescriptionAnalysis = (response: string): PrescriptionAnalysis => {
+
+  const parsePrescriptionAnalysis = (
+    response: string
+  ): PrescriptionAnalysis => {
     try {
       const medicines: Medicine[] = [];
-      const medicinesSection = response.match(/🧾 Medicines:([\s\S]*?)(?=- 🔍 Diagnosis|$)/);
-      
+      const medicinesSection = response.match(
+        /🧾 Medicines:([\s\S]*?)(?=- 🔍 Diagnosis|$)/
+      );
+
       if (medicinesSection && medicinesSection[1]) {
         const medicinesText = medicinesSection[1].trim();
-        const medicineBlocks = medicinesText.split('•').filter(block => block.trim().length > 0);
-        
+        const medicineBlocks = medicinesText
+          .split("•")
+          .filter((block) => block.trim().length > 0);
+
         for (const block of medicineBlocks) {
           const nameMatch = block.match(/([^–\n]+)(?:–\s*([^\n]+))?/);
           const alternativeMatch = block.match(/↪ Alternative:\s*([^\n]+)/);
           const priceMatch = block.match(/💰 Price:\s*([^\n]+)/);
-          
+
           if (nameMatch) {
             medicines.push({
-              name: nameMatch[1]?.trim() || '',
-              dosage: nameMatch[2]?.trim() || '',
-              alternative: alternativeMatch ? alternativeMatch[1]?.trim() : '',
-              price: priceMatch ? priceMatch[1]?.trim() : ''
+              name: nameMatch[1]?.trim() || "",
+              dosage: nameMatch[2]?.trim() || "",
+              alternative: alternativeMatch ? alternativeMatch[1]?.trim() : "",
+              price: priceMatch ? priceMatch[1]?.trim() : "",
             });
           }
         }
       }
-      
-      const diagnosisMatch = response.match(/🔍 Diagnosis\/Condition:\s*([^\n]+)/);
+
+      const diagnosisMatch = response.match(
+        /🔍 Diagnosis\/Condition:\s*([^\n]+)/
+      );
       const adviceMatch = response.match(/📋 Doctor's Advice:\s*([^\n]+)/);
-      
+
       return {
         medicines,
-        diagnosis: diagnosisMatch ? diagnosisMatch[1].trim() : '',
-        doctorAdvice: adviceMatch ? adviceMatch[1].trim() : ''
+        diagnosis: diagnosisMatch ? diagnosisMatch[1].trim() : "",
+        doctorAdvice: adviceMatch ? adviceMatch[1].trim() : "",
       };
     } catch (error) {
       console.error("Error parsing prescription analysis:", error);
       throw new Error("Failed to parse prescription analysis");
     }
   };
-  
+
   const generatePDF = () => {
     if (!analysis) return;
-    
-    const printWindow = window.open('', '_blank');
+
+    const printWindow = window.open("", "_blank");
     if (!printWindow) return;
-    
+
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -179,29 +212,53 @@ const Prescription = () => {
           
           <div class="section">
             <h2>💊 Medicines (${analysis.medicines.length})</h2>
-            ${analysis.medicines.map(medicine => `
+            ${analysis.medicines
+              .map(
+                (medicine) => `
               <div class="medicine-item">
                 <div class="medicine-name">${medicine.name}</div>
-                ${medicine.dosage ? `<div class="medicine-detail"><span class="label">Dosage:</span> ${medicine.dosage}</div>` : ''}
-                ${medicine.alternative ? `<div class="medicine-detail"><span class="label">Alternative:</span> ${medicine.alternative}</div>` : ''}
-                ${medicine.price ? `<div class="medicine-detail"><span class="label">Price:</span> ${medicine.price}</div>` : ''}
+                ${
+                  medicine.dosage
+                    ? `<div class="medicine-detail"><span class="label">Dosage:</span> ${medicine.dosage}</div>`
+                    : ""
+                }
+                ${
+                  medicine.alternative
+                    ? `<div class="medicine-detail"><span class="label">Alternative:</span> ${medicine.alternative}</div>`
+                    : ""
+                }
+                ${
+                  medicine.price
+                    ? `<div class="medicine-detail"><span class="label">Price:</span> ${medicine.price}</div>`
+                    : ""
+                }
               </div>
-            `).join('')}
+            `
+              )
+              .join("")}
           </div>
           
-          ${analysis.diagnosis ? `
+          ${
+            analysis.diagnosis
+              ? `
             <div class="section">
               <h2>🔍 Diagnosis/Condition</h2>
               <div class="diagnosis-box">${analysis.diagnosis}</div>
             </div>
-          ` : ''}
+          `
+              : ""
+          }
           
-          ${analysis.doctorAdvice ? `
+          ${
+            analysis.doctorAdvice
+              ? `
             <div class="section">
               <h2>📋 Doctor's Advice</h2>
               <div class="advice-box">${analysis.doctorAdvice}</div>
             </div>
-          ` : ''}
+          `
+              : ""
+          }
           
           <div class="footer">
             <p><strong>⚠️ Important Notice:</strong> This AI-powered analysis is not a substitute for professional medical advice. Always consult with your doctor or pharmacist.</p>
@@ -210,28 +267,28 @@ const Prescription = () => {
         </body>
       </html>
     `;
-    
+
     printWindow.document.write(htmlContent);
     printWindow.document.close();
     printWindow.focus();
     printWindow.print();
   };
-  
+
   const analyzePrescription = async () => {
     if (!file) {
       setError("Please select a file to analyze");
       return;
     }
-    
+
     if (!currentUser) {
       setError("You must be logged in to analyze prescriptions");
       return;
     }
-    
+
     setIsAnalyzing(true);
     setError(null);
     setAnalysis(null); // Clear previous results
-    
+
     try {
       // Convert file to base64
       const base64 = await new Promise<string>((resolve, reject) => {
@@ -240,32 +297,39 @@ const Prescription = () => {
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
-      
+
       // Send to Gemini for analysis
       const response = await GeminiService.analyzePrescription(base64);
       console.log("Gemini prescription analysis response:", response);
-      
+
       // Parse the response into a structured format
       const parsedAnalysis = parsePrescriptionAnalysis(response);
       setAnalysis(parsedAnalysis);
-      
+
       // Save to Firestore
       if (currentUser) {
         const prescriptionData = {
           createdAt: serverTimestamp(),
           userId: currentUser.uid,
           title: "Prescription Analysis",
-          summary: `Analysis of ${parsedAnalysis.medicines.length} medicines${parsedAnalysis.diagnosis ? ` for ${parsedAnalysis.diagnosis}` : ''}`,
+          summary: `Analysis of ${parsedAnalysis.medicines.length} medicines${
+            parsedAnalysis.diagnosis ? ` for ${parsedAnalysis.diagnosis}` : ""
+          }`,
           result: parsedAnalysis,
           originalResponse: response,
           status: "completed",
-          imageUrl: previewUrl
+          imageUrl: previewUrl,
         };
-        
-        const sessionsRef = collection(db, "prescriptions", currentUser.uid, "sessions");
+
+        const sessionsRef = collection(
+          db,
+          "prescriptions",
+          currentUser.uid,
+          "sessions"
+        );
         const docRef = await addDoc(sessionsRef, prescriptionData);
         console.log("Prescription analysis saved with ID:", docRef.id);
-        
+
         toast.success("Prescription successfully analyzed");
       }
     } catch (error: any) {
@@ -276,16 +340,18 @@ const Prescription = () => {
       setIsAnalyzing(false);
     }
   };
-  
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Prescription Analyzer</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Prescription Analyzer
+        </h1>
         <p className="text-muted-foreground mt-1">
           AI-powered prescription analysis and alternative medication finder
         </p>
       </div>
-      
+
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -295,16 +361,18 @@ const Prescription = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div 
+            <div
               className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-accent/50 transition-colors"
               onDragOver={handleDragOver}
               onDrop={handleDrop}
-              onClick={() => document.getElementById('prescription-upload')?.click()}
+              onClick={() =>
+                document.getElementById("prescription-upload")?.click()
+              }
             >
-              <Input 
-                type="file" 
-                id="prescription-upload" 
-                className="hidden" 
+              <Input
+                type="file"
+                id="prescription-upload"
+                className="hidden"
                 onChange={handleFileChange}
                 accept=".jpg,.jpeg,.png,.pdf"
               />
@@ -322,20 +390,20 @@ const Prescription = () => {
                 </div>
               </div>
             </div>
-            
+
             {previewUrl && (
               <div className="mt-4">
                 <Label className="text-sm font-medium">Preview</Label>
                 <div className="mt-2 border rounded-md overflow-hidden">
-                  <img 
-                    src={previewUrl} 
-                    alt="Prescription preview" 
+                  <img
+                    src={previewUrl}
+                    alt="Prescription preview"
                     className="w-full max-h-64 object-contain"
                   />
                 </div>
               </div>
             )}
-            
+
             {file && (
               <div className="mt-4 flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -347,8 +415,8 @@ const Prescription = () => {
                     {(file.size / 1024 / 1024).toFixed(2)} MB
                   </span>
                 </div>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => {
                     setFile(null);
@@ -373,12 +441,12 @@ const Prescription = () => {
                   Analyzing...
                 </>
               ) : (
-                'Analyze Prescription'
+                "Analyze Prescription"
               )}
             </Button>
           </CardFooter>
         </Card>
-        
+
         <div className="space-y-6">
           {error && (
             <Alert variant="destructive">
@@ -387,7 +455,7 @@ const Prescription = () => {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          
+
           {analysis && (
             <Card>
               <CardHeader>
@@ -402,7 +470,7 @@ const Prescription = () => {
                     <TabsTrigger value="medicines">Medicines</TabsTrigger>
                     <TabsTrigger value="summary">Summary</TabsTrigger>
                   </TabsList>
-                  
+
                   <div className="p-4">
                     <TabsContent value="medicines" className="mt-0">
                       <div className="space-y-4">
@@ -419,14 +487,22 @@ const Prescription = () => {
                             <div className="mt-3 space-y-2">
                               {medicine.alternative && (
                                 <div className="flex items-start text-sm">
-                                  <span className="font-medium mr-2 w-24">Alternative:</span>
-                                  <span className="text-muted-foreground">{medicine.alternative}</span>
+                                  <span className="font-medium mr-2 w-24">
+                                    Alternative:
+                                  </span>
+                                  <span className="text-muted-foreground">
+                                    {medicine.alternative}
+                                  </span>
                                 </div>
                               )}
                               {medicine.price && (
                                 <div className="flex items-start text-sm">
-                                  <span className="font-medium mr-2 w-24">Price:</span>
-                                  <span className="text-muted-foreground">{medicine.price}</span>
+                                  <span className="font-medium mr-2 w-24">
+                                    Price:
+                                  </span>
+                                  <span className="text-muted-foreground">
+                                    {medicine.price}
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -434,33 +510,38 @@ const Prescription = () => {
                         ))}
                       </div>
                     </TabsContent>
-                    
+
                     <TabsContent value="summary" className="mt-0">
                       <div className="space-y-4">
                         {analysis.diagnosis && (
                           <div className="border rounded-md p-4">
-                            <h3 className="font-medium mb-1">Diagnosis/Condition</h3>
+                            <h3 className="font-medium mb-1">
+                              Diagnosis/Condition
+                            </h3>
                             <p className="text-sm text-muted-foreground">
                               {analysis.diagnosis}
                             </p>
                           </div>
                         )}
-                        
+
                         {analysis.doctorAdvice && (
                           <div className="border rounded-md p-4">
-                            <h3 className="font-medium mb-1">Doctor's Advice</h3>
+                            <h3 className="font-medium mb-1">
+                              Doctor's Advice
+                            </h3>
                             <p className="text-sm text-muted-foreground">
                               {analysis.doctorAdvice}
                             </p>
                           </div>
                         )}
-                        
+
                         <Alert className="bg-primary/5">
                           <Check className="h-4 w-4" />
                           <AlertTitle>Important Notice</AlertTitle>
                           <AlertDescription className="text-sm">
-                            This AI-powered analysis is not a substitute for professional medical advice.
-                            Always consult with your doctor or pharmacist.
+                            This AI-powered analysis is not a substitute for
+                            professional medical advice. Always consult with
+                            your doctor or pharmacist.
                           </AlertDescription>
                         </Alert>
                       </div>
@@ -469,7 +550,7 @@ const Prescription = () => {
                 </Tabs>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button 
+                <Button
                   variant="outline"
                   onClick={() => {
                     setFile(null);
@@ -479,7 +560,7 @@ const Prescription = () => {
                 >
                   New Analysis
                 </Button>
-                <Button 
+                <Button
                   onClick={generatePDF}
                   className="bg-gradient-to-r from-teal-600 to-azure-600 text-white hover:opacity-90"
                 >
